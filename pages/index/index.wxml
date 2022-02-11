@@ -1,0 +1,160 @@
+<!--pages/index/index.wxml-->
+<view class="map">
+    <!-- 地图 -->
+    <map style="width: 100vw;height: 100vh;" id="myMap" markers="{{markers}}" bindmarkertap="markertap"
+        bindtap="hideLabel" scale="{{scale}}" show-location longitude="{{ln}}" latitude="{{la}}"
+        enable-3D="{{enable3D}}" enable-satellite="{{enableSatellite}}" skew="{{skew}}">
+    </map>
+</view>
+<!-- 顶部工具栏 -->
+<view class="top_box cu-bar search bg-white shadow shadow-lg bg-white">
+    <!-- 工具栏 -->
+    <view class="tools margin-top-sm margin-bottom-sm">
+        <!-- 搜索框 -->
+        <view class="search-form round">
+            <text class="cuIcon-search"></text>
+            <input type="text" placeholder="搜索地点" style="padding-right: 0!important;" value="{{inputVal}}"
+                bindinput="inputTyping"></input>
+            <!-- 取消按钮 -->
+            <view style="font-size: 30rpx;" bindtap="hideInput">
+                <text class="cuIcon-close"></text>
+            </view>
+        </view>
+    </view>
+    <!-- 搜索结果显示列表 -->
+    <scroll-view wx:if='{{viewShowed}}' class="scroll-view text-grey bg-white shadow-warp" scroll-y
+        scroll-with-animation enable-back-to-top enhanced fast-deceleration>
+        <view wx:for="{{serachList}}" wx:key="flag" class="msg-item">
+            <view class='user-name' bindtap='name' data-index="{{index}}">{{item.name}}</view>
+        </view>
+    </scroll-view>
+</view>
+<!-- 侧边工具栏 -->
+<view class="tools_box">
+    <view bindtap='searchClassroom' class="layer">
+        <image class="classroom_img" src="../../images/schoolBus.png"></image>
+        <view class="tool_text">班车时刻</view>
+    </view>
+    <view bindtap='chooseLayer' data-target="layerModal" class="layer">
+        <image class="tool_img" src="../../images/layer.png"></image>
+        <view class="tool_text">图层</view>
+    </view>
+    <view class="tools">
+        <!--学习 按钮-->
+        <view class="tool_box" bindtap='showPoint' data-type="study">
+            <image class="tool_img" src="../../images/study{{tool_active=='study'?'_active':''}}.png"></image>
+            <view class="tool_text">学习</view>
+        </view>
+        <!--餐饮 按钮-->
+        <view class="tool_box" bindtap='showPoint' data-type="food">
+            <image class="tool_img" src="../../images/food{{tool_active=='food'?'_active':''}}.png"></image>
+            <view class="tool_text">餐饮</view>
+        </view>
+        <!--宿舍 按钮-->
+        <view class="tool_box" bindtap='showPoint' data-type="dormitory">
+            <image class="tool_img" src="../../images/dormitory{{tool_active=='dormitory'?'_active':''}}.png"></image>
+            <view class="tool_text">宿舍</view>
+        </view>
+        <!--娱乐 按钮-->
+        <view class="tool_box" bindtap='showPoint' data-type="life">
+            <image class="tool_img" src="../../images/life{{tool_active=='life'?'_active':''}}.png"></image>
+            <view class="tool_text">休闲</view>
+        </view>
+    </view>
+    <!-- 定位按钮 -->
+    <view bindtap='locate' class="locate">
+        <image class="tool_img" src="../../images/locate.png"></image>
+    </view>
+</view>
+<view class="cu-modal bottom-modal {{modalName=='layerModal'?'show':''}}" bindtap="hideModal">
+    <view class="cu-dialog">
+        <view class="cu-bar bg-white justify-end">
+            <view class="content">图层</view>
+            <view class="action" bindtap="hideModal">
+                <text class="cuIcon-close text-red"></text>
+            </view>
+        </view>
+        <view class="padding-lg">
+            <view class="flex justify-center">
+                <view class="layer_box {{layerName=='2d'?'layer_active':''}}" bindtap="ensureLayer" data-target="2d">
+                    <image class="layer_img" src="../../images/2d.png"></image>
+                    <text class="layer_text">平面图</text>
+                </view>
+                <view class="layer_box {{layerName=='3d'?'layer_active':''}}" bindtap="ensureLayer" data-target="3d">
+                    <image class="layer_img" src="../../images/3d.png"></image>
+                    <text class="layer_text">3D立体图</text>
+                </view>
+                <view class="layer_box {{layerName=='satellite'?'layer_active':''}}" bindtap="ensureLayer"
+                    data-target="satellite">
+                    <image class="layer_img" src="../../images/satellite.png"></image>
+                    <text class="layer_text">卫星图</text>
+                </view>
+            </view>
+        </view>
+    </view>
+</view>
+<view class="cu-modal bottom-modal {{modalName=='classRoomModal'?'show':''}}" bindtap="hideModal">
+    <view class="cu-dialog">
+        <view class="cu-bar bg-white justify-between">
+            <view class="bg-green shadow padding-xs margin-left-lg radius" bindtap="goThere" data-target="lh">到这去</view>
+            <view class="content">空教室信息</view>
+            <view class="action" bindtap="hideModal">
+                <text class="cuIcon-close text-red"></text>
+            </view>
+        </view>
+        <view class="padding-xs">
+            <scroll-view scroll-y="true" style="max-height: 530rpx;">
+                <view class="bg-white content shadow margin-xs padding-lg" wx:for="{{classRoomList}}" wx:key="_id">
+                    <view class="flex justify-between">
+                        <view class="text-xxl text-bold margin-bottom-sm text-black text-shadow">{{item.name}}</view>
+                        <view class="text-lg margin-bottom-sm">{{item.lh}}</view>
+                    </view>
+                    <!-- 教室类型 -->
+                    <view class="flex justify-start margin-bottom">
+                        <text class="cuIcon-cascades text-gray margin-right"> 教室类型</text>
+                        <text>{{item.cdlb_id}}</text>
+                    </view>
+                    <!-- 空闲时间 -->
+                    <view class="flex justify-start">
+                        <text class="cuIcon-time text-gray margin-right"> 空闲时间</text>
+                        <view wx:for="{{item.emptyTime}}" wx-if="{{idx%2==0}}" wx:for-index="idx" wx:for-item="num"
+                            wx:key="idx" class="cu-tag line-olive bg-blue light round sm">
+                            {{num}} - {{num+1}}
+                        </view>
+                    </view>
+                </view>
+            </scroll-view>
+        </view>
+    </view>
+</view>
+<view class="cu-modal bottom-modal {{modalName=='kdModal'?'show':''}}" bindtap="hideModal">
+    <view class="cu-dialog">
+        <view class="cu-bar bg-white justify-between">
+            <view class="bg-green shadow padding-xs margin-left-lg radius" bindtap="goThere" data-target="kd">到这去</view>
+            <view class="content">快递点信息</view>
+            <view class="action" bindtap="hideModal">
+                <text class="cuIcon-close text-red"></text>
+            </view>
+        </view>
+        <view class="padding-lg">
+            <view class="bg-white content shadow margin-xs padding-lg">
+                    <view class="flex justify-between">
+                        <view class="text-xxl text-bold margin-bottom-sm text-black text-shadow">{{tmp_kd.name}}</view>
+                    </view>
+                    <!-- 快递种类 -->
+                    <view class="flex justify-start margin-bottom align-center" style="flex-wrap:wrap">
+                        <text class="cuIcon-cascades text-gray margin-right margin-bottom-xs"> 快递</text>
+                        <view wx:for="{{tmp_kd.kd}}"  wx:for-index="idx" wx:for-item="kd_item"
+                            wx:key="idx" class="cu-tag line-olive bg-blue light round sm">
+                            {{kd_item}}
+                        </view>
+                    </view>
+                    <!-- 营业时间 -->
+                    <view class="flex justify-start align-center">
+                        <text class="cuIcon-time text-gray margin-right">营业时间</text>
+                        <text>{{tmp_kd.time}}</text>
+                    </view>
+                </view>
+        </view>
+    </view>
+</view>
